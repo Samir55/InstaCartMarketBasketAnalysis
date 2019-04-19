@@ -1,8 +1,7 @@
 #
-# Clear & Set workspace/directory
+# Clear
 #
 rm(list=ls())
-setwd("/Users/ibrahimradwan/Development/InstaCart")
 
 #
 # Include libs
@@ -15,12 +14,12 @@ library(arules)
 #
 # Load data files
 #
-aisles <- read.table("dataset/aisles.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
-departments <- read.table("dataset/departments.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
-orders <- read.table("dataset/orders.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
-products <- read.table("dataset/products.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
-order_products__prior <- read.table("dataset/order_products__prior.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
-order_products__train <- read.table("dataset/order_products__train.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+aisles <- read.table("../../dataset/aisles.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+departments <- read.table("../../dataset/departments.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+orders <- read.table("../../dataset/orders.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+products <- read.table("../../dataset/products.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+order_products__prior <- read.table("../../dataset/order_products__prior.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
+order_products__train <- read.table("../../dataset/order_products__train.csv", header=TRUE, sep=",", quote="\"", comment.char = "")
 
 summary(aisles)
 summary(departments)
