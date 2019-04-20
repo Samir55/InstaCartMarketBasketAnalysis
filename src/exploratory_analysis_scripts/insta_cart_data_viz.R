@@ -2,14 +2,21 @@
 # Clear
 #
 rm(list=ls())
+setwd("/Users/ibrahimradwan/Development/InstaCartMarketBasketAnalysis/src/exploratory_analysis_scripts")
 
 #
 # Include libs
 #
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(treemap)
 library(arules)
+library(NbClust)
+library(HSAUR)
+library(cluster)
+library(fpc)
+library(clue)
 
 #
 # Load data files
@@ -34,52 +41,55 @@ summary(order_products__train)
 options(scipen=10000)
 
 #
-# When do customers order
+# In which hour do customers order
 #
 ggplot(orders, aes(x=order_hour_of_day)) + 
 geom_histogram(stat="count",fill="skyblue")
 
+ggplot(orders, aes(x=order_dow)) + 
+geom_histogram(stat="count",fill="skyblue")
+
 #
-# When do they purchase again
+# Repurchase rate
 #
 ggplot(orders, aes(x=days_since_prior_order)) + 
 geom_histogram(stat="count",fill="skyblue")
 
 #
-# How many orders do people order
+# Number of orders for users
 #
 x <- count(filter(orders, eval_set=="prior"), order_number)
-ggplot(x, aes(order_number, n)) + 
-geom_line(color="skyblue", size=1) + 
-geom_point(size=2, color="blue")
-
+     ggplot(x, aes(order_number, n)) + 
+     geom_line(color="skyblue", size=1) + 
+     geom_point(size=2, color="blue")
+     
 #
-# How may items do people buy
+# Number of items per order
 #
 x <- count(order_products__prior, order_id)
-ggplot(x, aes(x=n)) + 
-geom_histogram(stat="count",fill="skyblue")
+     ggplot(x, aes(x=n)) + 
+     geom_histogram(stat="count",fill="skyblue")
 
 #
-# Bestsellers
+# Bestsellers items
 #
 x <- order_products__prior %>% 
-       group_by(product_id) %>% 
-       summarize(count = n()) %>% 
-       top_n(12, wt = count) %>%
-       left_join(select(products, product_id, product_name), by="product_id") %>%
-       arrange(desc(count)) 
+     group_by(product_id) %>% 
+     summarize(count = n()) %>% 
+     top_n(12, wt = count) %>%
+     left_join(select(products, product_id, product_name), by="product_id") %>%
+     arrange(desc(count)) 
 
 x
 
 #
-# What percentage of items bought are reordered
+# %reodrdered items to newly ordered items
 #
 x <- order_products__prior %>% 
-  group_by(reordered) %>% 
-  summarize(count = n()) %>% 
-  mutate(reordered = as.factor(reordered)) %>%
-  mutate(proportion = count/sum(count))
+     group_by(reordered) %>% 
+     summarize(count = n()) %>% 
+     mutate(reordered = as.factor(reordered)) %>%
+     mutate(proportion = count/sum(count))
 
 x
 
@@ -97,29 +107,19 @@ x2 <- order_products__prior %>%
       ungroup() %>% 
       group_by(department_id, aisle_id) %>% 
       summarize(sumcount = sum(count)) %>% 
-      left_join(tmp, by = c("department_id", "aisle_id")) %>% 
+      left_join(x, by = c("department_id", "aisle_id")) %>% 
       mutate(onesize = 1)
 
-treemap(x, index=c("department","aisle"), vSize="n", title="", palette="Set3", border.col="#FFFFFF")
-treemap(x2, index=c("department","aisle"), vSize="sumcount", title="", palette="Set3", border.col="#FFFFFF")
+treemap(x, index=c("department","aisle"), vSize="n", title="", palette="Set3", border.col="#FFFFFF", fontsize.title = 38, fontsize.labels = 28)
+treemap(x2, index=c("department","aisle"), vSize="sumcount", title="", palette="Set3", border.col="#FFFFFF", fontsize.title = 38, fontsize.labels = 28)
 
-#
-# Arules
-#
-# x <- order_products__prior %>% 
-#      group_by(product_id) %>% 
-#      left_join(products, by="product_id")
-# 
-# summary(x)
-# 
-# write.csv(x, file="dataset/transactions.csv")
-# 
-# transactions <- read.transactions("dataset/transactions.csv", format="single", sep=",", cols=c(2,6))
-# 
-# summary(transactions)
-# 
-# inspect(transactions[1:3])
-# 
-# groceryrules <- apriori(transactions, parameter = list(support =
-#                                                          0.001, confidence = 0.25))
-# inspect(groceryrules[1:60])
+# Reordering of products
+reordered_products <- filter(order_products__prior, reordered==1) %>% 
+                      group_by(product_id) %>% 
+                      summarize(reorder_count=n()) %>% 
+                      left_join(products, by="product_id") %>%
+                      arrange(desc(reorder_count)) 
+
+ggplot(reordered_products, aes(product_id, reorder_count)) + 
+geom_line(color="skyblue", size=1)
+
