@@ -1,1 +1,6 @@
+dataset/
+data/
+
 *.idea
+.DS_Store
+
